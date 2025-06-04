@@ -17,7 +17,6 @@ builder.Services.AddScoped<BookingServvie>();
 builder.Services.AddAuthentication("BookingToken")
     .AddJwtBearer("BookingToken", options =>
     {
-        options.Authority = "https://accountprovider.azurewebsites.net/api/account/verify"; 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -27,7 +26,8 @@ builder.Services.AddAuthentication("BookingToken")
             ValidAudience = builder.Configuration["Jwt:Audience"],
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
 
             ValidateLifetime = true
         };
