@@ -1,4 +1,6 @@
-﻿using BookingApi.Entities;
+﻿using Azure.Core;
+using BookingApi.Entities;
+using BookingApi.Models;
 using BookingApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,15 +11,21 @@ namespace BookingApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // this will be demanidng the token later
+    [Authorize(AuthenticationSchemes = "BookingToken")] // this will be demanidng the token later
     public class BookingController(BookingServvie bookingService) : ControllerBase
     {
         private readonly BookingServvie _bookingService = bookingService;
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] string eventId)
+        public async Task<IActionResult> CreateBooking([FromBody] BookingRequestDto request)
         {
+            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            Console.WriteLine("Claims:");
+            foreach (var claim in claims)
+            {
+                Console.WriteLine($"{claim.Type}: {claim.Value}");
+            }
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(userEmail))
                 return Unauthorized();
@@ -25,7 +33,7 @@ namespace BookingApi.Controllers
             var booking = new BookingEntity
             {
                 UserEmail = userEmail,
-                EventId = eventId
+                EventId = request.EventId
             };
 
             var result = await _bookingService.CreateBookingAsync(booking);
